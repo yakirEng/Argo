@@ -5,6 +5,10 @@ import os
 import torch
 import torch.optim as optim
 from torchsummary import summary
+import torchvision
+from torch.utils.data import Dataset, DataLoader
+
+from homography_models import RegressionModel
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -53,11 +57,10 @@ def train():
     total_iteration = 90000
     steps_per_epoch = num_samples / batch_size
     epochs = int(total_iteration / steps_per_epoch)
-    model = Model().to(device)
+    model = RegressionModel().to(device)
     summary(model, (2, 128, 128))
     optimizer = optim.SGD(model.parameters(), lr=0.005, momentum=0.9)
     for epoch in range(epochs):
-
         for i, (images, target) in enumerate(TrainLoader):
             optimizer.zero_grad()
             images = images.to(device);
@@ -72,6 +75,7 @@ def train():
                 print('Train Epoch: [{}/{}] [{}/{} ({:.0f}%)]\Mean Squared Error: {:.6f}'.format(
                     epoch + 1, epochs, i, len(TrainLoader),
                     100. * i / len(TrainLoader), loss))
+                plot_loss()
 
     state = {'epoch': epochs, 'state_dict': model.state_dict(),
              'optimizer': optimizer.state_dict()}
